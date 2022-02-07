@@ -58,56 +58,66 @@ class NotificationUtils {
         onSelectNotification: (String? payload) {
       print('received $payload');
       if (payload != null) {
-        int hourAlarm = jsonDecode(payload)['jam'] as int;
-        int minuteAlarm = jsonDecode(payload)['menit'] as int;
-        int beda = ((DateTime.now().hour * 3600) +
-                (DateTime.now().minute * 60) +
-                (DateTime.now().second)) -
-            ((hourAlarm * 3600) + (minuteAlarm * 60));
-        showDialog(
-            context: context,
-            builder: (context) => Dialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  insetPadding: const EdgeInsets.all(10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 200,
-                        padding: const EdgeInsets.all(20),
-                        child: DChartBar(
-                          data: [
-                            {
-                              'id': 'Alarm ',
-                              'data': [
-                                {
-                                  'domain':
-                                      '${DateTime.now().hour}:${DateTime.now().minute < 10 ? '0${DateTime.now().minute}' : DateTime.now().minute}',
-                                  'measure': beda
-                                },
-                              ],
-                            },
-                          ],
-                          domainLabelPaddingToAxisLine: 16,
-                          axisLineTick: 2,
-                          yAxisTitle: 'Lama menyala\n(detik)',
-                          xAxisTitle: 'Jam alarm',
-                          axisLinePointTick: 2,
-                          axisLinePointWidth: 10,
-                          axisLineColor: AppTheme.kPrimaryColor,
-                          measureLabelPaddingToAxisLine: 16,
-                          barColor: (barData, index, id) =>
-                              AppTheme.kPrimaryColor,
-                          showBarValue: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                )).then((value) => alarmBloc.add(DeleteAlarmEvent()));
+        showDialogChart(payload, context, alarmBloc);
       }
     });
+    final detail = await _notification.getNotificationAppLaunchDetails();
+    if(detail?.didNotificationLaunchApp??false){
+      if(detail?.payload!=null){
+        showDialogChart(detail!.payload!, context, alarmBloc);
+      }
+    }
+  }
+
+  static void showDialogChart(String payload, BuildContext context, AlarmBloc alarmBloc) {
+    int hourAlarm = jsonDecode(payload)['jam'] as int;
+    int minuteAlarm = jsonDecode(payload)['menit'] as int;
+    int beda = ((DateTime.now().hour * 3600) +
+            (DateTime.now().minute * 60) +
+            (DateTime.now().second)) -
+        ((hourAlarm * 3600) + (minuteAlarm * 60));
+    showDialog(
+        context: context,
+        builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              insetPadding: const EdgeInsets.all(10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 200,
+                    padding: const EdgeInsets.all(20),
+                    child: DChartBar(
+                      data: [
+                        {
+                          'id': 'Alarm ',
+                          'data': [
+                            {
+                              'domain':
+                                  '${DateTime.now().hour}:${DateTime.now().minute < 10 ? '0${DateTime.now().minute}' : DateTime.now().minute}',
+                              'measure': beda
+                            },
+                          ],
+                        },
+                      ],
+                      domainLabelPaddingToAxisLine: 16,
+                      axisLineTick: 2,
+                      yAxisTitle: 'Lama menyala\n(detik)',
+                      xAxisTitle: 'Jam alarm',
+                      axisLinePointTick: 2,
+                      axisLinePointWidth: 10,
+                      axisLineColor: AppTheme.kPrimaryColor,
+                      measureLabelPaddingToAxisLine: 16,
+                      barColor: (barData, index, id) =>
+                          AppTheme.kPrimaryColor,
+                      showBarValue: true,
+                    ),
+                  ),
+                ],
+              ),
+            )).then((value) => alarmBloc.add(DeleteAlarmEvent()));
   }
   static Future deleteAlarmNotification()async{
     _notification.cancelAll();

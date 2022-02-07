@@ -129,7 +129,7 @@ class _ClockViewState extends State<ClockView> {
                                 id: 1,
                                 hour: time.hour,
                                 minute: time.minute,
-                                body: 'Alarm diatur jam ${time.hour}:${time.minute}',
+                                body: 'Alarm diatur jam ${time.hour<10?'0${time.hour}':time.hour}:${time.minute<10?'0${time.minute}':time.minute}',
                                 title: 'Alarm',
                                 payload: jsonEncode(
                                   {
