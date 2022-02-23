@@ -4,12 +4,11 @@ import 'package:alarm/common/extension/notification_utils.dart';
 import 'package:alarm/common/theme.dart';
 import 'package:alarm/di/get_it.dart';
 import 'package:alarm/presentation/blocs/alarm/alarm_bloc.dart';
-import 'package:alarm/presentation/component/custom_time_pick.dart';
+import 'package:alarm/presentation/views/temp_clock.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class ClockView extends StatefulWidget {
   const ClockView({Key? key}) : super(key: key);
@@ -55,6 +54,8 @@ class _ClockViewState extends State<ClockView> {
               }else if(state.status == Status.failure){
                 EasyLoading.dismiss();
                 EasyLoading.showError(state.errMessage);
+              }else if (state.status == Status.success){
+                EasyLoading.dismiss();
               }
             }
           },
@@ -73,16 +74,16 @@ class _ClockViewState extends State<ClockView> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CustomTimePicker(
+                    TempClock(
                       initialTime: time,
-                      onTimeChange: (value) {
+                      onTimeChanged: (value) {
                         time = value;
                       },
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    state.alarm!=null?Column(
+                    state.alarm.isNotEmpty&&!state.alarm[0].hasRang?Column(
                       children: [
                         Card(
                           elevation: 0,
@@ -95,8 +96,8 @@ class _ClockViewState extends State<ClockView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text('Alarm sudah diatur',style: TextStyle(fontWeight: FontWeight.bold),),
-                                Text('Jam : ${state.alarm?.hour}',style: const TextStyle(color: Colors.black54),),
-                                Text('Menit : ${state.alarm?.minute}',style: const TextStyle(color: Colors.black54),),
+                                Text('Jam : ${state.alarm[0].hour}',style: const TextStyle(color: Colors.black54),),
+                                Text('Menit : ${state.alarm[0].minute}',style: const TextStyle(color: Colors.black54),),
                               ],
                             ),
                           ),
@@ -116,7 +117,7 @@ class _ClockViewState extends State<ClockView> {
                         ),
                       ],
                     ): const SizedBox(),
-                    state.alarm == null
+                    state.alarm.isEmpty||state.alarm[0].hasRang
                         ? TextButton(
                             style: TextButton.styleFrom(
                               shape: RoundedRectangleBorder(

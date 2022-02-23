@@ -78,30 +78,36 @@ class NotificationUtils {
         ((hourAlarm * 3600) + (minuteAlarm * 60));
     showDialog(
         context: context,
-        builder: (context) => Dialog(
+        builder: (context){
+          final state = alarmBloc.state;
+          if(state is AlarmLoading){
+            return const Dialog(
+              child: CircularProgressIndicator(),
+            );
+          }else if (state is AlarmLoaded){
+            alarmBloc.add(FireAlarmEvent(beda));
+            return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               insetPadding: const EdgeInsets.all(10),
-              child: Column(
+              child:Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     height: 200,
                     padding: const EdgeInsets.all(20),
                     child: DChartBar(
-                      data: [
-                        {
-                          'id': 'Alarm ',
-                          'data': [
-                            {
-                              'domain':
-                                  '${DateTime.now().hour}:${DateTime.now().minute < 10 ? '0${DateTime.now().minute}' : DateTime.now().minute}',
-                              'measure': beda
-                            },
-                          ],
-                        },
-                      ],
+                      data: state.alarm.map((e) => {
+                        'id': 'Alarm ${state.alarm.indexOf(e)}',
+                        'data': [
+                          {
+                            'domain':
+                            '${e.hour}:${e.minute < 10 ? '0${e.minute}' : e.minute}',
+                            'measure': state.alarm.indexOf(e)==0?beda:e.duration
+                          },
+                        ],
+                      },).toList(),
                       domainLabelPaddingToAxisLine: 16,
                       axisLineTick: 2,
                       yAxisTitle: 'Lama menyala\n(detik)',
@@ -111,13 +117,16 @@ class NotificationUtils {
                       axisLineColor: AppTheme.kPrimaryColor,
                       measureLabelPaddingToAxisLine: 16,
                       barColor: (barData, index, id) =>
-                          AppTheme.kPrimaryColor,
+                      AppTheme.kPrimaryColor,
                       showBarValue: true,
                     ),
                   ),
                 ],
               ),
-            )).then((value) => alarmBloc.add(DeleteAlarmEvent()));
+            );
+          }
+          return const SizedBox.shrink();
+        }).then((value) => alarmBloc.add(FetchAlarmEvent()));
   }
   static Future deleteAlarmNotification()async{
     _notification.cancelAll();

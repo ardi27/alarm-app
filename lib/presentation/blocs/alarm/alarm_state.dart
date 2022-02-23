@@ -15,13 +15,13 @@ class AlarmLoading extends AlarmState {
 
 }
 class AlarmLoaded extends AlarmState {
-  final Alarm? alarm;
+  final List<Alarm> alarm;
   final Status status;
   final String errMessage;
   const AlarmLoaded(this.alarm, this.status, this.errMessage);
   @override
   List<Object?> get props => [alarm,status,errMessage];
-  AlarmLoaded copyWith({Alarm? alarm,Status? status,String? errMessage})=>AlarmLoaded(alarm??this.alarm, status??this.status, errMessage??this.errMessage);
+  AlarmLoaded copyWith({List<Alarm>? alarm,Status? status,String? errMessage})=>AlarmLoaded(alarm??this.alarm, status??this.status, errMessage??this.errMessage);
 }
 class AlarmFailure extends AlarmState {
   final String message;

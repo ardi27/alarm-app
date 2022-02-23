@@ -29,9 +29,19 @@ class AlarmRepositoryImpl implements AlarmRepository{
   }
 
   @override
-  Future<Either<AppError, Alarm?>> getAlarm()async {
+  Future<Either<AppError, List<Alarm>>> getAlarm()async {
     try{
-      final res = await _dataSource.getAlarm();
+      final List<Alarm> res = await _dataSource.getAlarm();
+      return Right(res);
+    }catch(e){
+      return Left(AppError(AppErrorType.database,message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<AppError, bool>> updateAlarm(int duration)async {
+    try{
+      final res = await _dataSource.updateAlarm(duration);
       return Right(res);
     }catch(e){
       return Left(AppError(AppErrorType.database,message: e.toString()));

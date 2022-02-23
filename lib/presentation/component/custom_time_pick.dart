@@ -23,94 +23,52 @@ const Duration _kVibrateCommitDelay = Duration(milliseconds: 100);
 
 enum _TimePickerMode { hour, minute }
 
-const double _kTimePickerHeaderLandscapeWidth = 264.0;
 const double _kTimePickerHeaderControlHeight = 80.0;
 
 const double _kTimePickerWidthPortrait = 328.0;
-const double _kTimePickerWidthLandscape = 528.0;
-
-const double _kTimePickerHeightInput = 226.0;
 const double _kTimePickerHeightPortrait = 496.0;
-const double _kTimePickerHeightLandscape = 316.0;
 
 const double _kTimePickerHeightPortraitCollapsed = 484.0;
-const double _kTimePickerHeightLandscapeCollapsed = 304.0;
 
 const BorderRadius _kDefaultBorderRadius = BorderRadius.all(Radius.circular(4.0));
 const ShapeBorder _kDefaultShape = RoundedRectangleBorder(borderRadius: _kDefaultBorderRadius);
 
 @immutable
-class _TimePickerFragmentContext {
-  const _TimePickerFragmentContext({
+class TimePickerEntity {
+  const TimePickerEntity({
     required this.selectedTime,
-    required this.mode,
     required this.onTimeChange,
+    required this.mode,
     required this.onModeChange,
-    required this.onHourDoubleTapped,
-    required this.onMinuteDoubleTapped,
-    required this.use24HourDials,
-  }) : assert(selectedTime != null),
-        assert(mode != null),
-        assert(onTimeChange != null),
-        assert(onModeChange != null),
-        assert(use24HourDials != null);
-
+  });
   final TimeOfDay selectedTime;
   final _TimePickerMode mode;
   final ValueChanged<TimeOfDay> onTimeChange;
   final ValueChanged<_TimePickerMode> onModeChange;
-  final GestureTapCallback onHourDoubleTapped;
-  final GestureTapCallback onMinuteDoubleTapped;
-  final bool use24HourDials;
 }
 
 class _TimePickerHeader extends StatelessWidget {
   const _TimePickerHeader({
     required this.selectedTime,
-    required this.mode,
-    required this.orientation,
-    required this.onModeChanged,
-    required this.onChanged,
-    required this.onHourDoubleTapped,
-    required this.onMinuteDoubleTapped,
-    required this.use24HourDials,
-    required this.helpText,
-  }) : assert(selectedTime != null),
-        assert(mode != null),
-        assert(orientation != null),
-        assert(use24HourDials != null);
+    required this.onChanged, required this.mode,
+    required this.onModeChange,
+  });
 
   final TimeOfDay selectedTime;
   final _TimePickerMode mode;
-  final Orientation orientation;
-  final ValueChanged<_TimePickerMode> onModeChanged;
   final ValueChanged<TimeOfDay> onChanged;
-  final GestureTapCallback onHourDoubleTapped;
-  final GestureTapCallback onMinuteDoubleTapped;
-  final bool use24HourDials;
-  final String? helpText;
-
-  void _handleChangeMode(_TimePickerMode value) {
-    if (value != mode) {
-      onModeChanged(value);
-    }
-  }
+  final ValueChanged<_TimePickerMode> onModeChange;
 
   @override
   Widget build(BuildContext context) {
-    assert(debugCheckHasMediaQuery(context));
-    final ThemeData themeData = Theme.of(context);
     final TimeOfDayFormat timeOfDayFormat = MaterialLocalizations.of(context).timeOfDayFormat(
       alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
-    final _TimePickerFragmentContext fragmentContext = _TimePickerFragmentContext(
+    final TimePickerEntity fragmentContext = TimePickerEntity(
       selectedTime: selectedTime,
-      mode: mode,
       onTimeChange: onChanged,
-      onModeChange: _handleChangeMode,
-      onHourDoubleTapped: onHourDoubleTapped,
-      onMinuteDoubleTapped: onMinuteDoubleTapped,
-      use24HourDials: use24HourDials,
+      mode: mode,
+      onModeChange: onModeChange
     );
 
     final EdgeInsets padding;
@@ -124,14 +82,6 @@ class _TimePickerHeader extends StatelessWidget {
           height: kMinInteractiveDimension * 2,
           child: Row(
             children: <Widget>[
-              // if (!use24HourDials && timeOfDayFormat == TimeOfDayFormat.a_space_h_colon_mm) ...<Widget>[
-              //   _DayPeriodControl(
-              //     selectedTime: selectedTime,
-              //     orientation: orientation,
-              //     onChanged: onChanged,
-              //   ),
-              //   const SizedBox(width: 12.0),
-              // ],
               Expanded(
                 child: Row(
                   // Hour/minutes should not change positions in RTL locales.
@@ -223,7 +173,7 @@ class _HourControl extends StatelessWidget {
     required this.fragmentContext,
   });
 
-  final _TimePickerFragmentContext fragmentContext;
+  final TimePickerEntity fragmentContext;
 
   @override
   Widget build(BuildContext context) {
@@ -233,32 +183,14 @@ class _HourControl extends StatelessWidget {
     final String formattedHour = fragmentContext.selectedTime.hour.toString();
 
     TimeOfDay hoursFromSelected(int hoursToAdd) {
-      if (fragmentContext.use24HourDials) {
-        final int selectedHour = fragmentContext.selectedTime.hour;
-        return fragmentContext.selectedTime.replacing(
-          hour: (selectedHour + hoursToAdd) % TimeOfDay.hoursPerDay,
-        );
-      } else {
-        // Cycle 1 through 12 without changing day period.
-        final int periodOffset = fragmentContext.selectedTime.periodOffset;
-        final int hours = fragmentContext.selectedTime.hourOfPeriod;
-        return fragmentContext.selectedTime.replacing(
-          hour: periodOffset + (hours + hoursToAdd) % TimeOfDay.hoursPerPeriod,
-        );
-      }
+      final int selectedHour = fragmentContext.selectedTime.hour;
+      return fragmentContext.selectedTime.replacing(
+        hour: (selectedHour + hoursToAdd) % TimeOfDay.hoursPerDay,
+      );
     }
 
     final TimeOfDay nextHour = hoursFromSelected(1);
-    final String formattedNextHour = localizations.formatHour(
-      nextHour,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
-    );
     final TimeOfDay previousHour = hoursFromSelected(-1);
-    final String formattedPreviousHour = localizations.formatHour(
-      previousHour,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
-    );
-
     return _HourMinuteControl(
       isSelected: fragmentContext.mode == _TimePickerMode.hour,
       text: formattedHour,
@@ -268,7 +200,6 @@ class _HourControl extends StatelessWidget {
   }
 }
 
-/// A passive fragment showing a string value.
 class _StringFragment extends StatelessWidget {
   const _StringFragment({
     required this.timeOfDayFormat,
@@ -320,7 +251,7 @@ class _MinuteControl extends StatelessWidget {
     required this.fragmentContext,
   });
 
-  final _TimePickerFragmentContext fragmentContext;
+  final TimePickerEntity fragmentContext;
 
   @override
   Widget build(BuildContext context) {
@@ -478,9 +409,7 @@ class _Dial extends StatefulWidget {
     required this.use24HourDials,
     required this.onChanged,
     required this.onHourSelected,
-  }) : assert(selectedTime != null),
-        assert(mode != null),
-        assert(use24HourDials != null);
+  });
 
   final TimeOfDay selectedTime;
   final _TimePickerMode mode;
@@ -524,8 +453,9 @@ class _DialState extends State<_Dial> with SingleTickerProviderStateMixin {
   void didUpdateWidget(_Dial oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.mode != oldWidget.mode || widget.selectedTime != oldWidget.selectedTime) {
-      if (!_dragging)
+      if (!_dragging) {
         _animateTo(_getThetaForTime(widget.selectedTime));
+      }
     }
   }
 
@@ -936,35 +866,11 @@ class CustomTimePicker extends StatefulWidget {
   const CustomTimePicker({
     Key? key,
     required this.initialTime,
-    this.cancelText,
-    this.confirmText,
-    this.helpText,
-    this.errorInvalidText,
-    this.hourLabelText,
-    this.minuteLabelText,
-    this.restorationId,
-    this.initialEntryMode = TimePickerEntryMode.dial, required this.onTimeChange,
-  }) : assert(initialTime != null),
+    required this.onTimeChange,
+  }):
         super(key: key);
 
   final TimeOfDay initialTime;
-
-  final TimePickerEntryMode initialEntryMode;
-
-  final String? cancelText;
-
-
-  final String? confirmText;
-
-  final String? helpText;
-
-
-  final String? errorInvalidText;
-
-
-  final String? hourLabelText;
-  final String? minuteLabelText;
-  final String? restorationId;
   final Function(TimeOfDay) onTimeChange;
 
   @override
@@ -1051,10 +957,10 @@ class _RestorableTimePickerModeN extends RestorableValue<_TimePickerMode?> {
   Object? toPrimitives() => value?.index;
 }
 
-class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMixin {
+class _CustomTimePickerState extends State<CustomTimePicker>  {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  late final _RestorableTimePickerEntryMode _entryMode = _RestorableTimePickerEntryMode(widget.initialEntryMode);
+  late final _RestorableTimePickerEntryMode _entryMode = _RestorableTimePickerEntryMode(TimePickerEntryMode.input);
   final _RestorableTimePickerMode _mode = _RestorableTimePickerMode(_TimePickerMode.hour);
   final _RestorableTimePickerModeN _lastModeAnnounced = _RestorableTimePickerModeN(null);
   final RestorableBool _autoValidate = RestorableBool(false);
@@ -1068,21 +974,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
     localizations = MaterialLocalizations.of(context);
     _announceInitialTimeOnce();
     _announceModeOnce();
-  }
-
-  @override
-  String? get restorationId => widget.restorationId;
-
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(_entryMode, 'entry_mode');
-    registerForRestoration(_mode, 'mode');
-    registerForRestoration(_lastModeAnnounced, 'last_mode_announced');
-    registerForRestoration(_autoValidate, 'autovalidate');
-    registerForRestoration(_autofocusHour, 'autofocus_hour');
-    registerForRestoration(_autofocusMinute, 'autofocus_minute');
-    registerForRestoration(_announcedInitialTime, 'announced_initial_time');
-    registerForRestoration(_selectedTime, 'selected_time');
   }
 
   RestorableTimeOfDay get selectedTime => _selectedTime;
@@ -1134,8 +1025,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
   }
 
   void _announceInitialTimeOnce() {
-    if (_announcedInitialTime.value)
-      return;
 
     final MediaQueryData media = MediaQuery.of(context);
     final MaterialLocalizations localizations = MaterialLocalizations.of(context);
@@ -1143,7 +1032,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
       context,
       localizations.formatTimeOfDay(widget.initialTime, alwaysUse24HourFormat: media.alwaysUse24HourFormat),
     );
-    _announcedInitialTime.value = true;
   }
 
   void _handleTimeChanged(TimeOfDay value) {
@@ -1170,37 +1058,15 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
   }
 
   Size _dialogSize(BuildContext context) {
-    final Orientation orientation = MediaQuery.of(context).orientation;
     final ThemeData theme = Theme.of(context);
-    // Constrain the textScaleFactor to prevent layout issues. Since only some
-    // parts of the time picker scale up with textScaleFactor, we cap the factor
-    // to 1.1 as that provides enough space to reasonably fit all the content.
     final double textScaleFactor = math.min(MediaQuery.of(context).textScaleFactor, 1.1);
 
     final double timePickerWidth;
     final double timePickerHeight;
-    switch (_entryMode.value) {
-      case TimePickerEntryMode.dial:
-        switch (orientation) {
-          case Orientation.portrait:
-            timePickerWidth = _kTimePickerWidthPortrait;
-            timePickerHeight = theme.materialTapTargetSize == MaterialTapTargetSize.padded
-                ? _kTimePickerHeightPortrait
-                : _kTimePickerHeightPortraitCollapsed;
-            break;
-          case Orientation.landscape:
-            timePickerWidth = _kTimePickerWidthLandscape * textScaleFactor;
-            timePickerHeight = theme.materialTapTargetSize == MaterialTapTargetSize.padded
-                ? _kTimePickerHeightLandscape
-                : _kTimePickerHeightLandscapeCollapsed;
-            break;
-        }
-        break;
-      case TimePickerEntryMode.input:
-        timePickerWidth = _kTimePickerWidthPortrait;
-        timePickerHeight = _kTimePickerHeightInput;
-        break;
-    }
+    timePickerWidth = _kTimePickerWidthPortrait;
+    timePickerHeight = theme.materialTapTargetSize == MaterialTapTargetSize.padded
+        ? _kTimePickerHeightPortrait
+        : _kTimePickerHeightPortraitCollapsed;
     return Size(timePickerWidth, timePickerHeight * textScaleFactor);
   }
 
@@ -1209,8 +1075,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
     assert(debugCheckHasMediaQuery(context));
     final MediaQueryData media = MediaQuery.of(context);
     const bool use24HourDials = true;
-    final ThemeData theme = Theme.of(context);
-    final ShapeBorder shape = TimePickerTheme.of(context).shape ?? _kDefaultShape;
     final Orientation orientation = media.orientation;
 
     final Widget picker;
@@ -1238,13 +1102,9 @@ class _CustomTimePickerState extends State<CustomTimePicker> with RestorationMix
     final Widget header = _TimePickerHeader(
       selectedTime: _selectedTime.value,
       mode: _mode.value,
-      orientation: orientation,
-      onModeChanged: _handleModeChanged,
+      onModeChange: _handleModeChanged,
       onChanged: _handleTimeChanged,
-      onHourDoubleTapped: _handleHourDoubleTapped,
-      onMinuteDoubleTapped: _handleMinuteDoubleTapped,
-      use24HourDials: use24HourDials,
-      helpText: widget.helpText,
+
     );
     picker = Column(
       mainAxisSize: MainAxisSize.min,

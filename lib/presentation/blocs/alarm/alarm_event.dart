@@ -14,3 +14,7 @@ class AddAlarmEvent extends AlarmEvent{
 class DeleteAlarmEvent extends AlarmEvent{
 
 }
+class FireAlarmEvent extends AlarmEvent{
+  final int duration;
+  const FireAlarmEvent(this.duration);
+}

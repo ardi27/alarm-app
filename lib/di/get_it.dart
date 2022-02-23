@@ -4,6 +4,7 @@ import 'package:alarm/domain/repository/alarm_repository.dart';
 import 'package:alarm/domain/usecase/add_alarm.dart';
 import 'package:alarm/domain/usecase/delete_alarm.dart';
 import 'package:alarm/domain/usecase/get_alarm.dart';
+import 'package:alarm/domain/usecase/update_alarm.dart';
 import 'package:alarm/presentation/blocs/alarm/alarm_bloc.dart';
 import 'package:get_it/get_it.dart';
 
@@ -24,7 +25,8 @@ void injectUseCase(){
   getIt.registerLazySingleton(() => GetAlarm(getIt()));
   getIt.registerLazySingleton(() => DeleteAlarm(getIt()));
   getIt.registerLazySingleton(() => AddAlarm(getIt()));
+  getIt.registerLazySingleton(() => UpdateAlarm(getIt()));
 }
 void injectBloc(){
-  getIt.registerFactory(() => AlarmBloc(getIt(),getIt(),getIt()));
+  getIt.registerFactory(() => AlarmBloc(getIt(),getIt(),getIt(),getIt()));
 }

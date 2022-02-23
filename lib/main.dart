@@ -1,6 +1,8 @@
 import 'package:alarm/common/theme.dart';
 import 'package:alarm/di/get_it.dart';
 import 'package:alarm/presentation/views/clock_view.dart';
+import 'package:alarm/presentation/views/new_clock.dart';
+import 'package:alarm/presentation/views/temp_clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';

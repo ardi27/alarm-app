@@ -7,24 +7,27 @@ String alarmToJson(Alarm data) => json.encode(data.toJson());
 
 class Alarm {
   Alarm({
-    required this.id,
     required this.hour,
     required this.minute,
+    required this.hasRang,
+    required this.duration
   });
-
-  int id;
   int hour;
   int minute;
+  bool hasRang;
+  int duration;
 
   factory Alarm.fromJson(Map<String, dynamic> json) => Alarm(
-    id: json["id"],
     hour: json["hour"],
     minute: json["minute"],
+    hasRang: json['hasRang'],
+    duration: json['duration']
   );
 
   Map<String, dynamic> toJson() => {
-    "id": id,
     "hour": hour,
     "minute": minute,
+    'hasRang':hasRang,
+    'duration':duration
   };
 }
