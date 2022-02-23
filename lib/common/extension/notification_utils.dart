@@ -98,7 +98,7 @@ class NotificationUtils {
                     height: 200,
                     padding: const EdgeInsets.all(20),
                     child: DChartBar(
-                      data: state.alarm.map((e) => {
+                      data: state.alarm.reversed.map((e) => {
                         'id': 'Alarm ${state.alarm.indexOf(e)}',
                         'data': [
                           {
