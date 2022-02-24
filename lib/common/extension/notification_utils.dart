@@ -104,7 +104,7 @@ class NotificationUtils {
                           {
                             'domain':
                             '${e.hour}:${e.minute < 10 ? '0${e.minute}' : e.minute}',
-                            'measure': state.alarm.indexOf(e)==0?beda:e.duration
+                            'measure': state.alarm.indexOf(e)==state.alarm.indexOf(state.alarm.last)?beda:e.duration
                           },
                         ],
                       },).toList(),
